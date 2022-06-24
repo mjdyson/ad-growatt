@@ -23,7 +23,7 @@ class Timespan(IntEnum):
     month = 2
 
 class GrowattApi:
-    server_url = 'https://server-api.growatt.com/'
+    server_url = 'https://server.growatt.com/'
 
     def __init__(self):
         self.session = requests.Session()
@@ -112,7 +112,7 @@ class GrowattApi:
         if not is_password_hashed:
             password = hash_password(password)
 
-        response = self.session.post(self.get_url('newLoginAPI.do'), data={
+        response = self.session.post(self.get_url('newTwoLoginAPI.do'), data={
             'userName': username,
             'password': password
         })
