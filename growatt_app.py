@@ -4,11 +4,11 @@ import growattServer
 class AD_Growatt(hass.Hass):
 
     def initialize(self):
-        self.listen_state(self.get_inverter_settings, "input_button.house_battery_get_discharge_rate_button")
-        self.listen_state(self.set_charge_settings, "input_button.house_battery_set_charge_rate_button")
+        self.listen_state(self.get_charge_settings, "input_button.house_battery_get_charge_settings_button")
+        self.listen_state(self.set_charge_settings, "input_button.house_battery_set_charge_settings_button")
         self.listen_state(self.reset_time, "input_button.reset_time")
 
-    def get_inverter_settings(self, entity, attribute, old, new, kwargs):
+    def get_charge_settings(self, entity, attribute, old, new, kwargs):
         #Args are pulled in from the apps.yaml file.
         #It's good practice to have those values stored in the secrets file
         un = self.args["growatt_username"]

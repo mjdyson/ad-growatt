@@ -1,5 +1,5 @@
 ---
-get_inverter_settings:
+get_charge_settings:
   module: growatt_app
   class: AD_Growatt
   growatt_username: !secret growatt_username
