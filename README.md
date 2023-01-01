@@ -1,6 +1,8 @@
 # ad-growatt
 
-DISCLAIMER
+An AppDaemon App Example for controlling Growatt Inverters via HomeAssistant.
+
+# Disclaimer
 
 The developers & maintainers of this library accept no responsibility for any damage, problems or issues that arise with your Growatt systems as a result of its use.
 
@@ -10,11 +12,17 @@ To the best of our knowledge only the settings functions perform modifications t
 
 The library is used entirely at your own risk.
 
-CREDIT TO 
+# Installation 
+
+Head on over to the Wiki pages to find out more >>  
+
+[https://github.com/mjdyson/ad-growatt/wiki](https://github.com/mjdyson/ad-growatt/wiki)
+
+# Credit
 
 Credit to the original authors at
+https://github.com/indykoning/PyPi_GrowattServer/
 https://github.com/muppet3000/PyPi_GrowattServer/
 
-Specifically, I used this fork
-https://github.com/muppet3000/PyPi_GrowattServer/blob/feature/add-settings-functionality/growattServer/__init__.py
+
 
