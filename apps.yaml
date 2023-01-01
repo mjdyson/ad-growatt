@@ -1,12 +1,6 @@
 ---
-set_discharge_rate:
-  module: set_discharge_rate
-  class: HouseBatteryDischarge
-
-set_charge_rate:
-  module: set_charge_rate
-  class: HouseBatteryCharge
-
-get_discharge_rate:
-  module: get_inverter_settings
-  class: InverterSettings
+get_inverter_settings:
+  module: growatt_app
+  class: AD_Growatt
+  growatt_username: !secret growatt_username
+  growatt_password: !secret growatt_password
