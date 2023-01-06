@@ -1,12 +1,13 @@
 import hassapi as hass
 import growattServer
+import time
 
 class AD_Growatt(hass.Hass):
 
     def initialize(self):
-        self.listen_state(self.get_charge_settings, "input_button.house_battery_get_charge_settings_button")
-        self.listen_state(self.set_charge_settings, "input_button.house_battery_set_charge_settings_button")
-        self.listen_state(self.reset_time, "input_button.reset_time")
+        self.listen_state(self.get_charge_settings, "input_button.adgw_get_charge_settings_button")
+        self.listen_state(self.set_charge_settings, "input_button.adgw_set_charge_settings_button")
+        self.listen_state(self.reset_time, "input_button.adgw_reset_sensors")
 
     def get_charge_settings(self, entity, attribute, old, new, kwargs):
         #Args are pulled in from the apps.yaml file.
@@ -28,11 +29,11 @@ class AD_Growatt(hass.Hass):
         response = api.get_mix_inverter_settings(device_sn)
 
         #Create new sensors in HA and populate them with the values we've just received from the server.
-        self.set_state("sensor.battery_first_time_slot_1_start", state = response['obj']['mixBean']['forcedChargeTimeStart1'], attributes = {"friendly_name": "Charge Time 1 Start"})
-        self.set_state("sensor.battery_first_time_slot_1_stop", state = response['obj']['mixBean']['forcedChargeTimeStop1'], attributes = {"friendly_name": "Charge Time 1 Stop"})
-        self.set_state("sensor.battery_first_time_slot_1_enabled", state = response['obj']['mixBean']['forcedChargeStopSwitch1'], attributes = {"friendly_name": "Charge Time 1 Enabled"})
-        self.set_state("sensor.battery_first_charge_stopped_soc", state = response['obj']['mixBean']['wchargeSOCLowLimit2'], attributes = {"friendly_name": "Charge SoC Max"})
-        self.set_state("sensor.battery_first_ac_charge_enabled", state = response['obj']['mixBean']['acChargeEnable'], attributes = {"friendly_name": "Grid Charge Enabled"})
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_start", state = response['obj']['mixBean']['forcedChargeTimeStart1'])
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_end", state = response['obj']['mixBean']['forcedChargeTimeStop1'])
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_enabled", state = response['obj']['mixBean']['forcedChargeStopSwitch1'])
+        self.set_state("sensor.template_adgw_battery_first_charge_stopped_soc", state = response['obj']['mixBean']['wchargeSOCLowLimit2'])
+        self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = response['obj']['mixBean']['acChargeEnable'])
 
     def set_charge_settings(self, entity, attribute, old, new, kwargs):
         un = self.args["growatt_username"]
@@ -49,23 +50,23 @@ class AD_Growatt(hass.Hass):
         device_sn = device['deviceSn']
 
         # Read the values required from HA and put them into variables
-        start_timestamp = self.parse_time(self.get_state("input_datetime.growatt_start_time"))
-        end_timestamp = self.parse_time(self.get_state("input_datetime.growatt_end_time"))
-        charge_final_soc = self.get_state("input_select.growatt_charge_final_soc")
+        start_timestamp = self.parse_time(self.get_state("input_datetime.adgw_battery_first_time_slot_1_start"))
+        end_timestamp = self.parse_time(self.get_state("input_datetime.adgw_battery_first_time_slot_1_end"))
+        charge_final_soc = self.get_state("input_select.adgw_battery_charge_max_soc")
 
         # Convert on/off to 1/0
-        if self.get_state("input_boolean.growatt_force_charge_on") == "on":
-            force_charge_on = 1
-        else:
-            force_charge_on = 0
+        ac_charge_on = convert_on_off(self.get_state("input_boolean.adgw_ac_charge_on"))
+        battery_first_time_slot_1_enabled = convert_on_off(self.get_state("input_boolean.adgw_battery_first_time_slot_1_enabled"))
+        #self.log(battery_first_time_slot_1_enabled)
+        #self.log(ac_charge_on)
 
         # Create dictionary of settings to apply through the api call. The order of these elements is important.
         schedule_settings = ["100", #Charging power %
                                 charge_final_soc.replace("%", ""), #Stop charging SoC %
-                                force_charge_on,   #Allow AC charging (1 = Enabled)
+                                ac_charge_on,   #Allow AC charging (1 = Enabled)
                                 start_timestamp.hour, start_timestamp.minute, #Schedule 1 - Start time
                                 end_timestamp.hour, end_timestamp.minute, #Schedule 1 - End time
-                                force_charge_on,        #Schedule 1 - Enabled/Disabled (1 = Enabled)
+                                battery_first_time_slot_1_enabled,        #Schedule 1 - Enabled/Disabled (1 = Enabled)
                                 "00", "00", #Schedule 2 - Start time
                                 "00", "00", #Schedule 2 - End time
                                 "0",        #Schedule 2 - Enabled/Disabled (0 = Disabled)
@@ -80,7 +81,15 @@ class AD_Growatt(hass.Hass):
         #This section is just for testing and can be deleted if required. 
         #It is a script that clears the values stored inside the sensors we create
         #It allows us to test whether new data is properly being pulled from the server.
-        self.set_state("sensor.battery_first_time_slot_1_start", state = "0", attributes = {"friendly_name": "Charge Time 1 Start"})
-        self.set_state("sensor.battery_first_time_slot_1_stop", state = "0", attributes = {"friendly_name": "Charge Time 2 Stop"})
-        self.set_state("sensor.battery_first_charge_stopped_soc", state = "0", attributes = {"friendly_name": "Charge SoC Max"})
-        self.set_state("sensor.battery_first_ac_charge_enabled", state = "0", attributes = {"friendly_name": "Grid Charge Enabled"})
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_start", state = "0")
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_end", state = "0")
+        self.set_state("sensor.template_adgw_battery_first_charge_stopped_soc", state = "0")
+        self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = "0")
+        self.set_state("sensor.template_adgw_battery_first_time_slot_1_enabled", state = "0")
+
+def convert_on_off(value):
+    # Function to convert on/off to 1/0
+    if value == "on":
+        return "1"
+    else:
+        return "0"
