@@ -9,7 +9,15 @@ growatt_appdaemon:
     adgw_set_charge_settings_button:
       name: adgw_set_charge_settings_button
       icon: mdi:export
+    adgw_get_device_ids_button:
+      name: adgw_get_device_ids_button
   input_select:
+    adgw_devices:
+      name: adgw_devices
+      options:
+        - "---"
+      initial: "---"
+      icon: mdi:application-cog
     adgw_battery_charge_max_soc:
       name: adgw_battery_charge_max_soc
       icon: mdi:battery-bluetooth
@@ -94,8 +102,12 @@ growatt_appdaemon:
         friendly_name: Get charge settings from Server
       input_button.adgw_set_charge_settings_button:
         friendly_name: Set charge settings on Server
+      input_button.adgw_get_device_ids_button:
+        friendly_name: Get device IDs
       input_select.adgw_battery_charge_max_soc:
         friendly_name: SoC Charge Max
+      input_select.adgw_devices:
+        friendly_name: Plant Devices
       input_datetime.adgw_battery_first_time_slot_1_end:
         friendly_name: Battery First - Time Slot 1 (End)
       input_datetime.adgw_battery_first_time_slot_1_start:
