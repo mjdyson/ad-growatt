@@ -76,6 +76,20 @@ growatt_appdaemon:
         - unique_id: adgw_battery_first_time_slot_1_end
           icon: "mdi:battery-clock"
           state: ""
+  automation:
+    - id: update_growatt_sensor_on_boot
+      alias: Update ad-growatt sensor on boot
+      description: "When starting home-assistant, get values from growatt server"
+      mode: single
+      trigger:
+        - platform: homeassistant
+          event: start
+      condition: []
+      action:
+        - service: input_button.press
+          data: {}
+          target:
+            entity_id: input_button.adgw_get_charge_settings_button
   homeassistant:
     customize:
       sensor.template_adgw_battery_first_charge_stopped_soc:
