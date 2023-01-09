@@ -77,7 +77,7 @@ growatt_appdaemon:
           icon: "mdi:battery-clock"
           state: ""
   automation:
-    - id: update_growatt_sensor_on_boot
+    - id: adgw_update_growatt_sensor_on_boot
       alias: Update ad-growatt sensor on boot
       description: "When starting home-assistant, get values from growatt server"
       mode: single
@@ -86,6 +86,11 @@ growatt_appdaemon:
           event: start
       condition: []
       action:
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 30
+            milliseconds: 0
         - service: input_button.press
           data: {}
           target:
