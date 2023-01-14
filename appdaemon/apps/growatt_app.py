@@ -16,24 +16,21 @@ class AD_Growatt(hass.Hass):
 
         api = growattServer.GrowattApi(True) #get an instance of the api, using a random string as the ID
         session = api.login(un, pwd) #login and return a session
-
         plant_list = api.plant_list(session['user']['id'])
-        plant = plant_list['data'][0] #This is an array - we just take the first - would need a for-loop for more systems
-        plant_id = plant['plantId']
-        plant_info = api.plant_info(plant_id)
 
         self.entity_list = []
+        for plant in plant_list['data']:
+            # For all the plants on the account
+            plant_id = plant['plantId']
+            plant_info = api.plant_info(plant_id)
 
-        i = 0
-        while i < len(plant_info['deviceList']):
-            device = plant_info['deviceList'][i]
-            device_sn = device['deviceSn']
-            self.entity_list.append(device_sn)
-            i += 1
+            for device in plant_info['deviceList']:
+                # For all the devices in the plant, add them to the entity_list
+                device_sn = device['deviceSn']
+                self.entity_list.append(device_sn)
 
-        #device = plant_info['deviceList'][0] #This is an array - we just take the first - would need a for-loop for more systems
-        #device_sn = device['deviceSn']
         self.call_service("input_select/set_options", entity_id="input_select.adgw_devices", options= self.entity_list)
+        self.call_service("input_select/select_first", entity_id="input_select.adgw_devices")
 
     def get_charge_settings(self, entity, attribute, old, new, kwargs):
         #Args are pulled in from the apps.yaml file.
