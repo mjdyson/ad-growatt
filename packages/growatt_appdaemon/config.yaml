@@ -1,0 +1,120 @@
+growatt_appdaemon:
+  input_button:
+    adgw_reset_sensors:
+      name: adgw_reset_sensors
+      icon: mdi:restart
+    adgw_get_charge_settings_button:
+      name: adgw_get_charge_settings_button
+      icon: mdi:import
+    adgw_set_charge_settings_button:
+      name: adgw_set_charge_settings_button
+      icon: mdi:export
+    adgw_get_device_ids_button:
+      name: adgw_get_device_ids_button
+  input_select:
+    adgw_devices:
+      name: adgw_devices
+      options:
+        - "---"
+      initial: "---"
+      icon: mdi:application-cog
+    adgw_battery_charge_max_soc:
+      name: adgw_battery_charge_max_soc
+      icon: mdi:battery-bluetooth
+      options:
+        - 0
+        - 10
+        - 20
+        - 30
+        - 40
+        - 50
+        - 60
+        - 70
+        - 80
+        - 90
+        - 100
+  input_datetime:
+    adgw_battery_first_time_slot_1_end:
+      name: adgw_battery_first_time_slot_1_end
+      icon: mdi:battery-clock
+      has_date: false
+      has_time: true
+    adgw_battery_first_time_slot_1_start:
+      name: adgw_battery_first_time_slot_1_start
+      icon: mdi:battery-clock
+      has_date: false
+      has_time: true
+  input_boolean:
+    adgw_ac_charge_on:
+      name: adgw_ac_charge_on
+      icon: mdi:toggle-switch-outline
+    adgw_battery_first_time_slot_1_enabled:
+      name: adgw_battery_first_time_slot_1_enabled
+      icon: mdi:toggle-switch-outline
+  script:
+    adgw_reset_time_off_peak:
+      alias: adgw_reset_time_off_peak
+      sequence:
+        - service: input_datetime.set_datetime
+          data:
+            time: "00:30:00"
+          target:
+            entity_id: input_datetime.adgw_battery_first_time_slot_1_start
+        - service: input_datetime.set_datetime
+          data:
+            time: "04:30:00"
+          target:
+            entity_id: input_datetime.adgw_battery_first_time_slot_1_end
+      mode: single
+      icon: mdi:recycle-variant
+  template:
+    - sensor:
+        - unique_id: adgw_battery_first_charge_stopped_soc
+          icon: "mdi:battery-bluetooth"
+          state: ""
+        - unique_id: adgw_battery_first_ac_charge_enabled
+          icon: "mdi:toggle-switch-outline"
+          state: ""
+        - unique_id: adgw_battery_first_time_slot_1_enabled
+          icon: "mdi:toggle-switch-outline"
+          state: ""
+        - unique_id: adgw_battery_first_time_slot_1_start
+          icon: "mdi:battery-clock"
+          state: ""
+        - unique_id: adgw_battery_first_time_slot_1_end
+          icon: "mdi:battery-clock"
+          state: ""
+  homeassistant:
+    customize:
+      sensor.template_adgw_battery_first_charge_stopped_soc:
+        friendly_name: Battery First - Charge Stopped SoC
+      sensor.template_adgw_battery_first_ac_charge_enabled:
+        friendly_name: Battery First - AC Charge Enabled
+      sensor.template_adgw_battery_first_time_slot_1_enabled:
+        friendly_name: Battery First - Time Slot 1 Enabled
+      sensor.template_adgw_battery_first_time_slot_1_start:
+        friendly_name: Battery First - Time Slot 1 (Start)
+      sensor.template_adgw_battery_first_time_slot_1_end:
+        friendly_name: Battery First - Time Slot 1 (End)
+      input_button.adgw_reset_sensors:
+        friendly_name: Reset Sensors
+      input_button.adgw_get_charge_settings_button:
+        friendly_name: Get charge settings from Server
+      input_button.adgw_set_charge_settings_button:
+        friendly_name: Set charge settings on Server
+      input_button.adgw_get_device_ids_button:
+        friendly_name: Get device IDs
+      input_select.adgw_battery_charge_max_soc:
+        friendly_name: SoC Charge Max
+      input_select.adgw_devices:
+        friendly_name: Plant Devices
+      input_datetime.adgw_battery_first_time_slot_1_end:
+        friendly_name: Battery First - Time Slot 1 (End)
+      input_datetime.adgw_battery_first_time_slot_1_start:
+        friendly_name: Battery First - Time Slot 1 (Start)
+      input_boolean.adgw_ac_charge_on:
+        friendly_name: AC Charge On
+      input_boolean.adgw_battery_first_time_slot_1_enabled:
+        friendly_name: Battery First - Time Slot 1 Enabled
+      script.adgw_reset_time_off_peak:
+        friendly_name: Reset Time to Off Peak

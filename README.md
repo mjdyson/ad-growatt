@@ -20,7 +20,7 @@ Head on over to the Wiki pages to find out more >>
 
 # Credit
 
-Credit to the original authors at
+Credit to the original authors at  
 https://github.com/indykoning/PyPi_GrowattServer/
 https://github.com/muppet3000/PyPi_GrowattServer/
 
