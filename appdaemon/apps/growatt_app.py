@@ -10,6 +10,7 @@ class AD_Growatt(hass.Hass):
         self.listen_state(self.set_charge_settings, "input_button.adgw_set_charge_settings_button")
         self.listen_state(self.reset_time, "input_button.adgw_reset_sensors")
         self.listen_state(self.get_device_ids, "input_button.adgw_get_device_ids_button")
+        self.listen_state(self.set_discharge_settings, "input_button.adgw_set_discharge_settings_button")
         self.un = self.args["growatt_username"]
         self.pwd = self.args["growatt_password"]
         self.api = growattServer.GrowattApi(True) #get an instance of the api, using a random string as the ID
@@ -45,7 +46,7 @@ class AD_Growatt(hass.Hass):
             device_sn = self.get_first_device()
 
         #Query the server using the api
-        response = self.api.get_mix_inverter_settings(device_sn)
+        response = self.api.get_mix_inverter_settings(device_sn, "getMixSetParams")
 
         #Create new sensors in HA and populate them with the values we've just received from the server.
         self.set_state("sensor.template_adgw_battery_first_time_slot_1_start", state = response['obj']['mixBean']['forcedChargeTimeStart1'])
@@ -53,6 +54,7 @@ class AD_Growatt(hass.Hass):
         self.set_state("sensor.template_adgw_battery_first_time_slot_1_enabled", state = response['obj']['mixBean']['forcedChargeStopSwitch1'])
         self.set_state("sensor.template_adgw_battery_first_charge_stopped_soc", state = response['obj']['mixBean']['wchargeSOCLowLimit2'])
         self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = response['obj']['mixBean']['acChargeEnable'])
+        self.set_state("sensor.template_adgw_load_first_discharge_stopped_soc", state = response['obj']['mixBean']['loadFirstStopSocSet'])
 
     def set_charge_settings(self, entity, attribute, old, new, kwargs):
 
@@ -91,6 +93,23 @@ class AD_Growatt(hass.Hass):
         # The api call - specifically for the mix inverter. Some other op will need to be applied if you dont have a mix inverter (replace 'mix_ac_charge_time_period')
         response = self.api.update_mix_inverter_setting(device_sn, 'mix_ac_charge_time_period', schedule_settings)
 
+    def set_discharge_settings(self, entity, attribute, old, new, kwargs):
+
+        session = self.api.login(self.un, self.pwd) #login and return a session
+
+        #Device ID from the input_select
+        device_sn = self.get_state("input_select.adgw_devices")
+
+        #If device_sn has not been created, get the first device in the plant
+        if device_sn == "---":
+            device_sn = self.get_first_device()
+
+        # Create dictionary of settings to apply through the api call.
+        params = [self.get_state("input_select.adgw_battery_discharge_soc")]  #Value to set discharge SoC to
+
+        # The api call - specifically for the mix inverter. Some other op will need to be applied if you dont have a mix inverter (replace 'mix_ac_charge_time_period')
+        response = self.api.update_mix_inverter_setting_2(device_sn, 'mix_load_flast_value_multi', params)
+
     def reset_time(self, entity, attribute, old, new, kwargs):
         #This section is just for testing and can be deleted if required. 
         #It is a script that clears the values stored inside the sensors we create
@@ -100,6 +119,7 @@ class AD_Growatt(hass.Hass):
         self.set_state("sensor.template_adgw_battery_first_charge_stopped_soc", state = "0")
         self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = "0")
         self.set_state("sensor.template_adgw_battery_first_time_slot_1_enabled", state = "0")
+        self.set_state("sensor.template_adgw_load_first_discharge_stopped_soc", state = "0")
 
     def get_first_device():
         plant_list = self.api.plant_list(session['user']['id'])
@@ -116,4 +136,3 @@ def convert_on_off(value):
         return "1"
     else:
         return "0"
-
