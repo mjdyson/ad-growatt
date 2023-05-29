@@ -13,6 +13,8 @@ growatt_appdaemon:
       name: adgw_get_device_ids_button
     adgw_set_discharge_settings_button:
       name: adgw_set_discharge_settings_button
+    adgw_set_export_limits_button:
+      name: adgw_set_export_limits_button
   input_select:
     adgw_devices:
       name: adgw_devices
@@ -38,6 +40,21 @@ growatt_appdaemon:
     adgw_battery_discharge_soc:
       name: adgw_battery_discharge_soc
       icon: mdi:battery-bluetooth
+      options:
+        - 0
+        - 10
+        - 20
+        - 30
+        - 40
+        - 50
+        - 60
+        - 70
+        - 80
+        - 90
+        - 100
+    adgw_export_limit_rate:
+      name: adgw_export_limit_rate
+      icon: "mdi:transmission-tower-export"
       options:
         - 0
         - 10
@@ -87,6 +104,9 @@ growatt_appdaemon:
     adgw_battery_first_time_slot_1_enabled:
       name: adgw_battery_first_time_slot_1_enabled
       icon: mdi:toggle-switch-outline
+    adgw_export_limit_enabled:
+      name: adgw_export_limit_enabled
+      icon: mdi:toggle-switch-outline
   script:
     adgw_reset_time_off_peak:
       alias: adgw_reset_time_off_peak
@@ -125,6 +145,7 @@ growatt_appdaemon:
           state: ""
   homeassistant:
     customize:
+      #Template Sensors
       sensor.template_adgw_battery_first_charge_stopped_soc:
         friendly_name: Battery First - Charge Stopped SoC
       sensor.template_adgw_battery_first_ac_charge_enabled:
@@ -137,6 +158,11 @@ growatt_appdaemon:
         friendly_name: Battery First - Time Slot 1 (End)
       sensor.template_adgw_load_first_discharge_stopped_soc:
         friendly_name: Load First - Discharge Stopped SoC
+      sensor.template_adgw_export_limit_enabled:
+        friendly_name: Export Limit Enabled
+      sensor.template_adgw_export_limit_rate:
+        friendly_name: Export Limit Rate
+      #Input Buttons
       input_button.adgw_reset_sensors:
         friendly_name: Reset Sensors
       input_button.adgw_get_charge_settings_button:
@@ -147,19 +173,29 @@ growatt_appdaemon:
         friendly_name: Set discharge settings on Server
       input_button.adgw_get_device_ids_button:
         friendly_name: Get device IDs
+      input_button.adgw_set_export_limits_button:
+        friendly_name: Set export limits
+      #Input Select
       input_select.adgw_battery_charge_max_soc:
         friendly_name: SoC Charge Max
       input_select.adgw_battery_discharge_soc:
         friendly_name: SoC Discharge SoC
       input_select.adgw_devices:
         friendly_name: Plant Devices
+      input_select.adgw_export_limit_rate:
+        friendly_name: Export Limit Rate
+      #Input DateTime
       input_datetime.adgw_battery_first_time_slot_1_end:
         friendly_name: Battery First - Time Slot 1 (End)
       input_datetime.adgw_battery_first_time_slot_1_start:
         friendly_name: Battery First - Time Slot 1 (Start)
+      #Input Booleans
       input_boolean.adgw_ac_charge_on:
         friendly_name: AC Charge On
       input_boolean.adgw_battery_first_time_slot_1_enabled:
         friendly_name: Battery First - Time Slot 1 Enabled
+      input_boolean.adgw_export_limit_enabled:
+        friendly_name: Export Limit Enabled
+      #Scripts
       script.adgw_reset_time_off_peak:
         friendly_name: Reset Time to Off Peak

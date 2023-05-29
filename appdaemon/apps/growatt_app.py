@@ -11,6 +11,7 @@ class AD_Growatt(hass.Hass):
         self.listen_state(self.reset_time, "input_button.adgw_reset_sensors")
         self.listen_state(self.get_device_ids, "input_button.adgw_get_device_ids_button")
         self.listen_state(self.set_discharge_settings, "input_button.adgw_set_discharge_settings_button")
+        self.listen_state(self.set_export_settings, "input_button.adgw_set_export_limits_button")
         self.un = self.args["growatt_username"]
         self.pwd = self.args["growatt_password"]
         self.api = growattServer.GrowattApi(True) #get an instance of the api, using a random string as the ID
@@ -55,6 +56,8 @@ class AD_Growatt(hass.Hass):
         self.set_state("sensor.template_adgw_battery_first_charge_stopped_soc", state = response['obj']['mixBean']['wchargeSOCLowLimit2'])
         self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = response['obj']['mixBean']['acChargeEnable'])
         self.set_state("sensor.template_adgw_load_first_discharge_stopped_soc", state = response['obj']['mixBean']['loadFirstStopSocSet'])
+        self.set_state("sensor.template_adgw_export_limit_enabled", state = response['obj']['mixBean']['exportLimit'])
+        self.set_state("sensor.template_adgw_export_limit_rate", state = response['obj']['mixBean']['exportLimitPowerRate'])
 
     def set_charge_settings(self, entity, attribute, old, new, kwargs):
 
@@ -75,6 +78,7 @@ class AD_Growatt(hass.Hass):
         # Convert on/off to 1/0
         ac_charge_on = convert_on_off(self.get_state("input_boolean.adgw_ac_charge_on"))
         battery_first_time_slot_1_enabled = convert_on_off(self.get_state("input_boolean.adgw_battery_first_time_slot_1_enabled"))
+
 
         # Create dictionary of settings to apply through the api call. The order of these elements is important.
         schedule_settings = ["100", #Charging power %
@@ -110,6 +114,28 @@ class AD_Growatt(hass.Hass):
         # The api call - specifically for the mix inverter. Some other op will need to be applied if you dont have a mix inverter (replace 'mix_ac_charge_time_period')
         response = self.api.update_mix_inverter_setting_2(device_sn, 'mix_load_flast_value_multi', params)
 
+    def set_export_settings(self, entity, attribute, old, new, kwargs):
+
+        session = self.api.login(self.un, self.pwd) #login and return a session
+
+        #Device ID from the input_select
+        device_sn = self.get_state("input_select.adgw_devices")
+
+        #If device_sn has not been created, get the first device in the plant
+        if device_sn == "---":
+            device_sn = self.get_first_device()
+
+        # Read the values required from HA and put them into variables
+        export_limit_enabled = convert_on_off(self.get_state("input_boolean.adgw_export_limit_enabled"))
+        export_limit_rate = self.get_state("input_select.adgw_export_limit_rate")
+
+        # Create dictionary of settings to apply through the api call.
+        params = [export_limit_enabled, #Enabled/Disabled 1/0
+                        export_limit_rate.replace("%", "")]        #Export limit rate
+
+        # The api call - specifically for the mix inverter. Some other op will need to be applied if you dont have a mix inverter (replace 'mix_ac_charge_time_period')
+        response = self.api.update_mix_inverter_setting_2(device_sn, 'backflow_setting', params)
+            
     def reset_time(self, entity, attribute, old, new, kwargs):
         #This section is just for testing and can be deleted if required. 
         #It is a script that clears the values stored inside the sensors we create
@@ -120,7 +146,9 @@ class AD_Growatt(hass.Hass):
         self.set_state("sensor.template_adgw_battery_first_ac_charge_enabled", state = "0")
         self.set_state("sensor.template_adgw_battery_first_time_slot_1_enabled", state = "0")
         self.set_state("sensor.template_adgw_load_first_discharge_stopped_soc", state = "0")
-
+        self.set_state("sensor.template_adgw_export_limit_enabled", state = "0")
+        self.set_state("sensor.template_adgw_export_limit_rate", state = "0")
+    
     def get_first_device():
         plant_list = self.api.plant_list(session['user']['id'])
         plant = plant_list['data'][0] #This is an array - we just take the first - would need a for-loop for more systems
